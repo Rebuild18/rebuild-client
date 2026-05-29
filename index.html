@@ -20088,7 +20088,11 @@ function openRunSessionCalendar() {
 // PERSISTENCE — localStorage save / load
 // ═══════════════════════════════════════════════════════
 
-const STORAGE_KEY = 'fieldready_v2';
+// Distinct from Field-ready's 'fieldready_v2': both apps deploy to the same
+// origin (rebuild18.github.io), so a shared key would let each app's full
+// state blob overwrite the other's. Athlete state rehydrates from Supabase
+// via rebuild_client_id, so no local migration is needed.
+const STORAGE_KEY = 'rebuild_client_v2';
 
 // ─── SUPABASE ─────────────────────────────────────────────────────────────────
 const SB_URL = 'https://tuzucfirpqmglwtlfyhp.supabase.co';
@@ -20154,7 +20158,7 @@ function sbGetShareUrl(clientId) {
 }
 
 
-const CLIENT_PORTAL_URL_KEY = 'rebuild_client_url';
+const CLIENT_PORTAL_URL_KEY = 'rbc_client_url';
 
 function getClientPortalUrl() {
   return localStorage.getItem(CLIENT_PORTAL_URL_KEY) || null;
@@ -21760,13 +21764,13 @@ function toggleSidebar() {
   const collapsed = sb.classList.toggle('collapsed');
   if (btn) btn.textContent = collapsed ? '▶' : '◀';
   if (btn) btn.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
-  try { localStorage.setItem('fr_sb_collapsed', collapsed ? '1' : '0'); } catch(e) {}
+  try { localStorage.setItem('rbc_sb_collapsed', collapsed ? '1' : '0'); } catch(e) {}
 }
 
 // Restore sidebar state on load
 (function() {
   try {
-    const saved = localStorage.getItem('fr_sb_collapsed');
+    const saved = localStorage.getItem('rbc_sb_collapsed');
     if (saved === '1') {
       setTimeout(() => {
         const sb = document.querySelector('.sb');
@@ -22814,18 +22818,18 @@ const JSONBIN_BASE = 'https://api.jsonbin.io/v3';
 let _currentShareClientId = null;
 
 function rebuildGetClientPortalUrl() {
-  let url = localStorage.getItem('rebuild_client_url') || '';
+  let url = localStorage.getItem('rbc_client_url') || '';
   if (url && !url.startsWith('http')) url = 'https://' + url;
   return url;
 }
 function rebuildSetClientPortalUrl(url) {
-  localStorage.setItem('rebuild_client_url', url.trim());
+  localStorage.setItem('rbc_client_url', url.trim());
 }
 function rebuildGetApiKey() {
-  return localStorage.getItem('rebuild_jsonbin_key') || '';
+  return localStorage.getItem('rbc_jsonbin_key') || '';
 }
 function rebuildSetApiKey(key) {
-  localStorage.setItem('rebuild_jsonbin_key', key.trim());
+  localStorage.setItem('rbc_jsonbin_key', key.trim());
 }
 
 // Safe base64url encoder — works with ALL byte values (unlike btoa)
