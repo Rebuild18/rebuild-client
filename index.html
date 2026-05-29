@@ -21016,7 +21016,15 @@ async function sbClientPushSession(session){
     return;
   }
   try{
-    const rowId = clientId + '_' + (session.scheduledDate || Date.now());
+    // Stable per-session id so two sessions on the same date (e.g. AM + PM)
+    // don't collide on the upsert key and clobber each other. Generated once
+    // and persisted; re-pushing the same session reuses it so the upsert merges.
+    if (!session.id) {
+      session.id = (crypto.randomUUID && crypto.randomUUID()) ||
+                   (Date.now().toString(36) + Math.random().toString(36).slice(2));
+      saveToStorage();
+    }
+    const rowId = clientId + '_' + session.id;
     const payload = {
       id: rowId,
       client_id: clientId,
