@@ -3479,6 +3479,12 @@ function localDateToIso(d) {
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 }
 
+// Stable unique id, with a fallback for browsers without crypto.randomUUID.
+function genId() {
+  return (crypto.randomUUID && crypto.randomUUID()) ||
+         (Date.now().toString(36) + Math.random().toString(36).slice(2));
+}
+
 // ── Program anchor date — single source of truth for phase week calculations ──
 // Priority: prog.startDate > c.rehabStartDate > c.injDate > today
 function getProgAnchorDate(c, prog) {
@@ -21024,8 +21030,7 @@ async function sbClientPushSession(session){
     // don't collide on the upsert key and clobber each other. Generated once
     // and persisted; re-pushing the same session reuses it so the upsert merges.
     if (!session.id) {
-      session.id = (crypto.randomUUID && crypto.randomUUID()) ||
-                   (Date.now().toString(36) + Math.random().toString(36).slice(2));
+      session.id = genId();
       saveToStorage();
     }
     const rowId = clientId + '_' + session.id;
